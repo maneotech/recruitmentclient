@@ -6,16 +6,29 @@ class UserModel {
   String username;
   String firstname;
   String lastname;
+  String? password;
   UserRole role;
 
-  UserModel(this.username, this.firstname, this.lastname, this.role);
+  UserModel(
+      this.username, this.firstname, this.lastname, this.password, this.role);
 
   factory UserModel.fromReqBody(String body) {
     Map<String, dynamic> json = jsonDecode(body);
 
     return UserModel(
-        json['username'], json['firstname'], json['lastname'], UserRole.values.firstWhere((e) => e.toString().split('.').last == json['role']));
+        json['username'],
+        json['firstname'],
+        json['lastname'],
+        null,
+        UserRole.values
+            .firstWhere((e) => e.index == json['role']));
   }
 
-  Map toJson() => {'username': username, 'firstname': firstname, 'lastname': lastname, 'role': role};
+  Map toJson() => {
+        'username': username,
+        'firstname': firstname,
+        'lastname': lastname,
+        'password': password,
+        'role': role.index
+      };
 }

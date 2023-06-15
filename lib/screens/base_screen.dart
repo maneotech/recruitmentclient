@@ -16,7 +16,7 @@ class BaseScreen extends StatelessWidget {
         child: Row(
           children: [
             const VerticalMenu(),
-            child,
+            Expanded(child: child),
           ],
         ),
       ),
