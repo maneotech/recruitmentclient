@@ -41,12 +41,10 @@ class _UserScreenState extends State<UserScreen> {
   loadData() async {
     if (_loggedUserRole == UserRole.superadmin) {
       loadManagers();
-      //load managers
     }
 
     if (_loggedUserRole == UserRole.superadmin ||
         _loggedUserRole == UserRole.manager) {
-      //load users
       loadUsers();
     }
   }
@@ -65,12 +63,29 @@ class _UserScreenState extends State<UserScreen> {
         _managers.addAll(managers);
       });
     } else {
-      ToastService.showError(
-          context, "Une erreur est survenue, merci de réessayer");
+      ToastService.showError(context,
+          "Une erreur est survenue pendant le chargement des managers, merci de réessayer");
     }
   }
 
-  loadUsers() async {}
+  loadUsers() async {
+    var res = await API.getUsers();
+    if (res.statusCode == 200) {
+      List<dynamic> data = jsonDecode(res.body);
+      List<UserModel> users = [];
+      for (int i = 0; i < data.length; i++) {
+        UserModel userModel = UserModel.fromReqBody(jsonEncode(data[i]));
+        users.add(userModel);
+      }
+      _users.clear();
+      setState(() {
+        _users.addAll(users);
+      });
+    } else {
+      ToastService.showError(context,
+          "Une erreur est survenue pendant le chargement des utilisateurs, merci de réessayer");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +100,12 @@ class _UserScreenState extends State<UserScreen> {
           Expanded(
               child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: CreateUpdateUserForm(_userToUpdate),
+            child: CreateUpdateUserForm(
+              _userToUpdate,
+              (userModel) => addCreatedUser(userModel),
+              (userModel) => changeUpdatedUser(userModel),
+              (username) => deleteUser(username),
+            ),
           )),
         ],
       ),
@@ -94,18 +114,86 @@ class _UserScreenState extends State<UserScreen> {
     // l'écran est partagé en 2 colonnes de même taille.
   }
 
+  addCreatedUser(UserModel userModel) {
+    if (userModel.role == UserRole.user) {
+      if (_users.contains(userModel) == false) {
+        setState(() {
+          _users.add(userModel);
+        });
+      }
+    } else {
+      if (_managers.contains(userModel) == false) {
+        setState(() {
+          _managers.add(userModel);
+        });
+      }
+    }
+  }
+
+  changeUpdatedUser(UserModel userModel) {
+    int managerIndex =
+        _managers.indexWhere((user) => user.username == userModel.username);
+    if (managerIndex != -1) {
+      if (userModel.role == UserRole.manager) {
+        setState(() {
+          _managers[managerIndex] = userModel;
+        });
+      } else {
+        setState(() {
+          _managers.removeAt(managerIndex);
+          _users.add(userModel);
+        });
+      }
+    } else {
+      int userIndex =
+          _users.indexWhere((user) => user.username == userModel.username);
+      if (userIndex != -1) {
+        if (userModel.role == UserRole.user) {
+          setState(() {
+            _users[userIndex] = userModel;
+          });
+        } else {
+          setState(() {
+            _users.removeAt(userIndex);
+            _managers.add(userModel);
+          });
+        }
+      }
+    }
+  }
+
+  deleteUser(String username) {
+    var index = _managers.indexWhere((element) => element.username == username);
+    if (index != -1) {
+      setState(() {
+        _managers.removeAt(index);
+      });
+    } 
+    else {
+      index = _users.indexWhere((element) => element.username == username);
+      if (index != -1) {
+        setState(() {
+          _users.removeAt(index);
+        });
+      }
+    }
+  }
+
   Column getUserListWidget() {
     UserModel user = Provider.of<UserProvider>(context, listen: false).user;
 
     return Column(
       children: [
-        if (user.role == UserRole.superadmin) GetManagersList(),
-        if (user.role == UserRole.superadmin || user.role == UserRole.manager)
-          GetUsersList(),
         CustomButton(
           "Créer un nouvel utilisateur",
           () => updateCurrentUser(null),
-        )
+        ),
+        if (user.role == UserRole.superadmin) GetManagersList(),
+        if (user.role == UserRole.superadmin || user.role == UserRole.manager)
+          Padding(
+            padding: const EdgeInsets.only(top: 20.0),
+            child: GetUsersList(),
+          ),
       ],
     );
   }
@@ -139,8 +227,7 @@ class _UserScreenState extends State<UserScreen> {
         shrinkWrap: true,
         itemCount: _users.length,
         itemBuilder: (context, index) {
-          return UserRow(
-              _users[index], () => updateCurrentUser(_users[index]));
+          return UserRow(_users[index], () => updateCurrentUser(_users[index]));
         },
       )
     ]);

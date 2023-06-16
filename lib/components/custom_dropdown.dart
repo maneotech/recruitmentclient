@@ -14,10 +14,11 @@ class _CustomDropdownState extends State<CustomDropdown> {
   UserRole? _selectedValue; // Set an initial value
 
   @override
-  void initState() {
-    super.initState();
+  void didUpdateWidget(covariant CustomDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
     _selectedValue = widget.selectedValue;
   }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -32,14 +33,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
                 focusColor: Colors.white,
                 isExpanded: true,
                 value: _selectedValue,
-                onChanged: (UserRole? newValue) {
-                  setState(() {
-                    if (newValue != null) {
-                      _selectedValue = newValue;
-                      widget.onChanged(_selectedValue!);
-                    }
-                  });
-                },
+                onChanged: (UserRole? newValue) => dropDownChanged(newValue),
                 items: [
                   DropdownMenuItem<UserRole>(
                     value: UserRole.user,
@@ -58,5 +52,15 @@ class _CustomDropdownState extends State<CustomDropdown> {
         ),
       ],
     );
+  }
+
+  dropDownChanged(UserRole? newValue) {
+    setState(() {
+      if (newValue != null) {
+        _selectedValue = newValue;
+      }
+    });
+
+    widget.onChanged(_selectedValue!);
   }
 }

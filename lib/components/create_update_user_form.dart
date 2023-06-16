@@ -11,8 +11,12 @@ import 'custom_dropdown.dart';
 
 class CreateUpdateUserForm extends StatefulWidget {
   final UserModel? _userToUpdateModel;
-
-  const CreateUpdateUserForm(this._userToUpdateModel, {super.key});
+  final Function(UserModel) userCreated;
+  final Function(UserModel) userUpdated;
+  final Function(String) userDeleted;
+  const CreateUpdateUserForm(
+      this._userToUpdateModel, this.userCreated, this.userUpdated, this.userDeleted,
+      {super.key});
 
   @override
   State<CreateUpdateUserForm> createState() => _CreateUpdateUserFormState();
@@ -45,7 +49,7 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
 
     return Column(
       children: [
-        const Text("Créer un nouvel utilisateur"),
+        getTitle(),
         TextInput("Identifiant", "Saisir l'identifiant", false, _ctlUsername),
         TextInput("Prénom", "Saisir le prénom", false, _ctlFirstname),
         TextInput("Nom", "Saisir le nom", false, _ctlLastname),
@@ -57,22 +61,37 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
             "Saisir la confirmation du mot de passe",
             true,
             _ctlConfirmPassword),
-        getCreateUpdateButton(),
         if (_isUpdateMode)
-          const Text("Si vous laissez les mots de passe vide, la modification du mot de passe ne sera pas prise en compte")
+          const Text(
+              "Si vous laissez les mots de passe vide, la modification du mot de passe ne sera pas prise en compte"),
+        getCreateUpdateButton(),
       ],
     );
   }
 
-  CustomButton getCreateUpdateButton(){
-    if (_isUpdateMode){
-      return CustomButton("Modifier cet utilisateur", () => updateUser());
+  Text getTitle() {
+    if (_isUpdateMode) {
+      return const Text("Modification de l'utilisateur");
+    } else {
+      return const Text("Créer un nouvel utilisateur");
     }
-    else {
-      return CustomButton("Créer cet utilisateur", () => createUser());
-    }
+  }
 
-     
+  Column getCreateUpdateButton() {
+    if (_isUpdateMode) {
+      return Column(
+        children: [
+          CustomButton("Modifier cet utilisateur", () => updateUser()),
+          CustomButton("Supprimer cet utilisateur", () => removeUser()),
+        ],
+      );
+    } else {
+      return Column(
+        children: [
+          CustomButton("Créer cet utilisateur", () => createUser()),
+        ],
+      );
+    }
   }
 
   initVariables() {
@@ -90,6 +109,8 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
       _ctlUsername.text = "";
       _ctlFirstname.text = "";
       _ctlLastname.text = "";
+      _ctlPassword.text = "";
+      _ctlConfirmPassword.text = "";
       _newUserRole = UserRole.user;
     }
   }
@@ -119,6 +140,7 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
     var res = await API.createUser(userModel);
 
     if (res.statusCode == 201) {
+      widget.userCreated(userModel);
       ToastService.showSuccess(context, "L'utilisateur a bien été créé");
     } else if (res.statusCode == 409) {
       ToastService.showError(
@@ -130,6 +152,49 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
   }
 
   updateUser() async {
+    if (_ctlUsername.text.isEmpty ||
+        _ctlFirstname.text.isEmpty ||
+        _ctlLastname.text.isEmpty) {
+      ToastService.showError(
+          context, "Veuillez remplir l'identifiant, le prénom et le nom");
+      return;
+    }
 
+    if (_ctlPassword.text != _ctlConfirmPassword.text) {
+      ToastService.showError(
+          context, "Les mots de passe doivent être identiques");
+      return;
+    }
+
+    UserModel userModel = UserModel(_ctlUsername.text, _ctlFirstname.text,
+        _ctlLastname.text, _ctlPassword.text, _newUserRole);
+    var res = await API.updateUser(userModel);
+    if (res.statusCode == 204) {
+      widget.userUpdated(userModel);
+      ToastService.showSuccess(context, "L'utilisateur a bien été modifié");
+    } else if (res.statusCode == 409) {
+      ToastService.showError(
+          context, "Un utilisateur possède déjà cet identifiant");
+    } else {
+      ToastService.showError(
+          context, "Une erreur est survenue, merci de réessayer");
+    }
+  }
+
+  removeUser() async {
+    if (_ctlUsername.text.isEmpty) {
+      ToastService.showError(context,
+          "Un identifiant est nécessaire pour supprimer un utilisateur");
+      return;
+    }
+
+    var res = await API.deleteUser(_ctlUsername.text);
+    if (res.statusCode == 200) {
+      widget.userDeleted(_ctlUsername.text);
+      ToastService.showSuccess(context, "L'utilisateur a bien été supprimé");
+    } else {
+      ToastService.showError(
+          context, "Une erreur est survenue, merci de réessayer");
+    }
   }
 }
