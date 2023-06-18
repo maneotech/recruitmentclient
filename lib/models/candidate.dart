@@ -63,12 +63,22 @@ class Candidate {
     );
   }
 
-  /* activities.map((activity) => activity.index).toList()
+  // activities.map((activity) => activity.index).toList()
   Map toJson() => {
-        'username': username,
         'firstname': firstname,
         'lastname': lastname,
-        'password': password,
-        'role': role.index
-      };*/
+        'currentLocation': currentLocation,
+        'targetLocation' : targetLocation,
+        'jobTitle' : jobTitle,
+        'field' : field,
+        'yearsOfExperience' : yearsOfExperience,
+        'phoneNumber': phoneNumber,
+        'email': email,
+        'keywords': keywords,
+        'pictureUrl' : pictureUrl,
+        'cvUrl' : cvUrl,
+        'enable' : enable,
+        'fulltime': fulltime,
+        'isFreelance': isFreelance
+      };
 }

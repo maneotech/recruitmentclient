@@ -20,6 +20,8 @@ class _ImportCVsScreenState extends State<ImportCVsScreen> {
   final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
 
   List<Candidate> validateCandidates = [];
+  List<Candidate> rejectedCandidates = [];
+
   Candidate? _currentCandidate;
   int _iteration = 1;
 
@@ -59,7 +61,7 @@ class _ImportCVsScreenState extends State<ImportCVsScreen> {
                 CreateUpdateCandidateForm(
                     _currentCandidate,
                     (candidate) => validatedCandidate(candidate),
-                    () => rejectCandidate())
+                    (candidate) => rejectCandidate(candidate))
               ],
             ),
           )
@@ -76,7 +78,11 @@ class _ImportCVsScreenState extends State<ImportCVsScreen> {
     goToNextCandidateIfPossible();
   }
 
-  rejectCandidate() {
+  rejectCandidate(Candidate candidate) {
+    if (rejectedCandidates.contains(candidate) == false) {
+      rejectedCandidates.add(candidate);
+    }
+
     goToNextCandidateIfPossible();
   }
 
@@ -90,7 +96,8 @@ class _ImportCVsScreenState extends State<ImportCVsScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (BuildContext context) => const SummaryNewCandidate(),
+          builder: (BuildContext context) =>
+              SummaryNewCandidate(widget.candidates, validateCandidates, rejectedCandidates),
         ),
       );
 

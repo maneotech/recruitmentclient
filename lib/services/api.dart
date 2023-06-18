@@ -4,17 +4,20 @@ import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
 import 'package:recruitmentclient/models/user.dart';
 
+import '../models/candidate.dart';
 import '../models/user_request.dart';
 import '../providers/auth.dart';
 
 class API {
-  static String base = "http://192.168.0.19:7122";
+  static String base = "http://192.168.1.29:7122";
   static String api = "$base/api";
 
   static Uri loginPath = Uri.parse("$api/authenticate/login");
   static Uri usersPath = Uri.parse("$api/users");
   static Uri getManagersPath = Uri.parse("$api/users/managers");
   static Uri uploadCandidatesPath = Uri.parse("$api/candidates/upload");
+  static Uri acceptCandidatesPath = Uri.parse("$api/candidates/accept");
+
   //exclude managers and superadmin
   static Uri getUsersPath = Uri.parse("$api/users/users");
 
@@ -63,5 +66,12 @@ class API {
 
     final streamedResponse = await request.send();
     return await http.Response.fromStream(streamedResponse);
+  }
+
+  static Future<Response> acceptCandidates(List<Candidate> candidates) async {
+
+    var jsonToEncode = candidates.map((activity) => activity).toList();
+    return await http.Client().post(acceptCandidatesPath,
+        headers: AuthProvider.getHeaders(), body: jsonEncode(jsonToEncode));
   }
 }

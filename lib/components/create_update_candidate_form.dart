@@ -7,7 +7,7 @@ import '../models/candidate.dart';
 class CreateUpdateCandidateForm extends StatefulWidget {
   final Candidate? candidateToUpdate;
   final Function(Candidate) validateCandidate;
-  final Function() rejectCandidate;
+  final Function(Candidate) rejectCandidate;
 
   const CreateUpdateCandidateForm(
       this.candidateToUpdate, this.validateCandidate, this.rejectCandidate,
@@ -68,12 +68,12 @@ class _CreateUpdateCandidateFormState extends State<CreateUpdateCandidateForm> {
           TextInput("Keywords", "Type keywords", false, _ctlKeywords),
         ]),
         CustomButton("Valider ce candidat", () => validateCandidate()),
-        CustomButton("Rejeter ce candidat", () => widget.rejectCandidate())
+        CustomButton("Rejeter ce candidat", () => rejectCandidate())
       ],
     );
   }
 
-  validateCandidate() {
+  Candidate buildCandidate() {
     Candidate candidate = Candidate(
       null,
       _ctlFirstname.text,
@@ -94,7 +94,17 @@ class _CreateUpdateCandidateFormState extends State<CreateUpdateCandidateForm> {
       false,
     );
 
+    return candidate;
+  }
+
+  validateCandidate() {
+    Candidate candidate = buildCandidate();
     widget.validateCandidate(candidate);
+  }
+
+  rejectCandidate() {
+    Candidate candidate = buildCandidate();
+    widget.rejectCandidate(candidate);
   }
 
   initVariables() {
