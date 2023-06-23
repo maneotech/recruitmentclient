@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recruitmentclient/components/textinput.dart';
+import 'package:recruitmentclient/services/snack_bar.dart';
 
 import '../models/user.dart';
 import '../providers/user.dart';
 import '../services/api.dart';
-import '../services/toast.dart';
 import 'custom_button.dart';
 import 'custom_dropdown.dart';
 
@@ -14,8 +14,8 @@ class CreateUpdateUserForm extends StatefulWidget {
   final Function(UserModel) userCreated;
   final Function(UserModel) userUpdated;
   final Function(String) userDeleted;
-  const CreateUpdateUserForm(
-      this._userToUpdateModel, this.userCreated, this.userUpdated, this.userDeleted,
+  const CreateUpdateUserForm(this._userToUpdateModel, this.userCreated,
+      this.userUpdated, this.userDeleted,
       {super.key});
 
   @override
@@ -35,6 +35,7 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
   //logged user role
   UserRole? _loggedUserRole;
   bool _isUpdateMode = false;
+  bool _changesInProgress = false;
 
   @override
   void initState() {
@@ -44,23 +45,48 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
   }
 
   @override
+  void dispose() {
+    hideModificationInProgress();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     initVariables();
+    hideModificationInProgress();
 
     return Column(
       children: [
         getTitle(),
-        TextInput("Identifiant", "Saisir l'identifiant", false, _ctlUsername),
-        TextInput("Prénom", "Saisir le prénom", false, _ctlFirstname),
-        TextInput("Nom", "Saisir le nom", false, _ctlLastname),
+        TextInput(
+          "Prénom",
+          "Saisir le prénom",
+          false,
+          _ctlFirstname,
+          onChanged: (value) => showModificationInProgress(),
+        ),
+        TextInput("Nom", "Saisir le nom", false, _ctlLastname,
+            onChanged: (value) => showModificationInProgress()),
+        TextInput("Nom d'utilisateur", "Saisir le nom d'utilisateur", false,
+            _ctlUsername,
+            onEnter: () => preFillUsername(),
+            onChanged: (value) => showModificationInProgress()),
         if (_loggedUserRole == UserRole.superadmin)
           CustomDropdown(_newUserRole, (role) => setRole(role)),
-        TextInput("Mot de passe", "Saisir le mot de passe", true, _ctlPassword),
         TextInput(
-            "Confirmation du mot de passe",
-            "Saisir la confirmation du mot de passe",
-            true,
-            _ctlConfirmPassword),
+          "Mot de passe",
+          "Saisir le mot de passe",
+          true,
+          _ctlPassword,
+          onChanged: (value) => showModificationInProgress(),
+        ),
+        TextInput(
+          "Confirmation du mot de passe",
+          "Saisir la confirmation du mot de passe",
+          true,
+          _ctlConfirmPassword,
+          onChanged: (value) => showModificationInProgress(),
+        ),
         if (_isUpdateMode)
           const Text(
               "Si vous laissez les mots de passe vide, la modification du mot de passe ne sera pas prise en compte"),
@@ -69,11 +95,39 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
     );
   }
 
+  showModificationInProgress() {
+    if (_changesInProgress == false) {
+      _changesInProgress = true;
+      SnackBarService.showInformation("Une modification est en cours",
+          isInfiniteDuration: true);
+    }
+  }
+
+  hideModificationInProgress() {
+    if (_changesInProgress == true) {
+      _changesInProgress = false;
+      SnackBarService.hideCurrentToast();
+    }
+  }
+
   Text getTitle() {
     if (_isUpdateMode) {
       return const Text("Modification de l'utilisateur");
     } else {
       return const Text("Créer un nouvel utilisateur");
+    }
+  }
+
+  preFillUsername() {
+    if (_isUpdateMode == false &&
+        _ctlFirstname.text.isNotEmpty &&
+        _ctlLastname.text.isNotEmpty &&
+        _ctlUsername.text.isEmpty) {
+      _ctlUsername.text =
+          "${_ctlFirstname.text}.${_ctlLastname.text}".toLowerCase();
+
+      _ctlUsername.selection = TextSelection.fromPosition(
+          TextPosition(offset: _ctlUsername.text.length));
     }
   }
 
@@ -104,6 +158,8 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
       _ctlFirstname.text = _userToUpdateModel!.firstname;
       _ctlLastname.text = _userToUpdateModel!.lastname;
       _newUserRole = _userToUpdateModel!.role;
+      _ctlPassword.text = "";
+      _ctlConfirmPassword.text = "";
     } else {
       _isUpdateMode = false;
       _ctlUsername.text = "";
@@ -125,13 +181,12 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
         _ctlLastname.text.isEmpty ||
         _ctlPassword.text.isEmpty ||
         _ctlConfirmPassword.text.isEmpty) {
-      ToastService.showError(context, "Veuillez remplir tous les champs");
+      SnackBarService.showError("Veuillez remplir tous les champs");
       return;
     }
 
     if (_ctlPassword.text != _ctlConfirmPassword.text) {
-      ToastService.showError(
-          context, "Les mots de passe doivent être identiques");
+      SnackBarService.showError("Les mots de passe doivent être identiques");
       return;
     }
 
@@ -141,13 +196,13 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
 
     if (res.statusCode == 201) {
       widget.userCreated(userModel);
-      ToastService.showSuccess(context, "L'utilisateur a bien été créé");
+      hideModificationInProgress();
+      SnackBarService.showSuccess("L'utilisateur a bien été créé");
+      _changesInProgress = false;
     } else if (res.statusCode == 409) {
-      ToastService.showError(
-          context, "Un utilisateur possède déjà cet identifiant");
+      SnackBarService.showError("Un utilisateur possède déjà cet identifiant");
     } else {
-      ToastService.showError(
-          context, "Une erreur est survenue, merci de réessayer");
+      SnackBarService.showError("Une erreur est survenue, merci de réessayer");
     }
   }
 
@@ -155,14 +210,13 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
     if (_ctlUsername.text.isEmpty ||
         _ctlFirstname.text.isEmpty ||
         _ctlLastname.text.isEmpty) {
-      ToastService.showError(
-          context, "Veuillez remplir l'identifiant, le prénom et le nom");
+      SnackBarService.showError(
+          "Veuillez remplir l'identifiant, le prénom et le nom");
       return;
     }
 
     if (_ctlPassword.text != _ctlConfirmPassword.text) {
-      ToastService.showError(
-          context, "Les mots de passe doivent être identiques");
+      SnackBarService.showError("Les mots de passe doivent être identiques");
       return;
     }
 
@@ -171,19 +225,18 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
     var res = await API.updateUser(userModel);
     if (res.statusCode == 204) {
       widget.userUpdated(userModel);
-      ToastService.showSuccess(context, "L'utilisateur a bien été modifié");
+      hideModificationInProgress();
+      SnackBarService.showSuccess("L'utilisateur a bien été modifié");
     } else if (res.statusCode == 409) {
-      ToastService.showError(
-          context, "Un utilisateur possède déjà cet identifiant");
+      SnackBarService.showError("Un utilisateur possède déjà cet identifiant");
     } else {
-      ToastService.showError(
-          context, "Une erreur est survenue, merci de réessayer");
+      SnackBarService.showError("Une erreur est survenue, merci de réessayer");
     }
   }
 
   removeUser() async {
     if (_ctlUsername.text.isEmpty) {
-      ToastService.showError(context,
+      SnackBarService.showError(
           "Un identifiant est nécessaire pour supprimer un utilisateur");
       return;
     }
@@ -191,10 +244,10 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
     var res = await API.deleteUser(_ctlUsername.text);
     if (res.statusCode == 200) {
       widget.userDeleted(_ctlUsername.text);
-      ToastService.showSuccess(context, "L'utilisateur a bien été supprimé");
+      hideModificationInProgress();
+      SnackBarService.showSuccess("L'utilisateur a bien été supprimé");
     } else {
-      ToastService.showError(
-          context, "Une erreur est survenue, merci de réessayer");
+      SnackBarService.showError("Une erreur est survenue, merci de réessayer");
     }
   }
 }

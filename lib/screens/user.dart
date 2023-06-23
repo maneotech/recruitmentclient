@@ -4,15 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recruitmentclient/components/create_update_user_form.dart';
 import 'package:recruitmentclient/components/custom_button.dart';
-import 'package:recruitmentclient/components/custom_dropdown.dart';
-import 'package:recruitmentclient/components/textinput.dart';
 import 'package:recruitmentclient/components/user_row.dart';
 import 'package:recruitmentclient/screens/base_screen.dart';
 import 'package:recruitmentclient/services/api.dart';
-import 'package:recruitmentclient/services/toast.dart';
 
 import '../models/user.dart';
 import '../providers/user.dart';
+import '../services/snack_bar.dart';
 
 class UserScreen extends StatefulWidget {
   const UserScreen({super.key});
@@ -63,7 +61,7 @@ class _UserScreenState extends State<UserScreen> {
         _managers.addAll(managers);
       });
     } else {
-      ToastService.showError(context,
+      SnackBarService.showError(
           "Une erreur est survenue pendant le chargement des managers, merci de réessayer");
     }
   }
@@ -82,8 +80,7 @@ class _UserScreenState extends State<UserScreen> {
         _users.addAll(users);
       });
     } else {
-      ToastService.showError(context,
-          "Une erreur est survenue pendant le chargement des utilisateurs, merci de réessayer");
+      SnackBarService.showError("Une erreur est survenue pendant le chargement des utilisateurs, merci de réessayer");
     }
   }
 
@@ -168,8 +165,7 @@ class _UserScreenState extends State<UserScreen> {
       setState(() {
         _managers.removeAt(index);
       });
-    } 
-    else {
+    } else {
       index = _users.indexWhere((element) => element.username == username);
       if (index != -1) {
         setState(() {

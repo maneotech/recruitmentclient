@@ -9,7 +9,7 @@ import '../models/user_request.dart';
 import '../providers/auth.dart';
 
 class API {
-  static String base = "http://192.168.1.29:7122";
+  static String base = "http://192.168.0.19:7122";
   static String api = "$base/api";
 
   static Uri loginPath = Uri.parse("$api/authenticate/login");
@@ -17,7 +17,7 @@ class API {
   static Uri getManagersPath = Uri.parse("$api/users/managers");
   static Uri uploadCandidatesPath = Uri.parse("$api/candidates/upload");
   static Uri acceptCandidatesPath = Uri.parse("$api/candidates/accept");
-
+  static Uri findBestMatchesPath = Uri.parse("$api/matching/offer");
   //exclude managers and superadmin
   static Uri getUsersPath = Uri.parse("$api/users/users");
 
@@ -69,9 +69,14 @@ class API {
   }
 
   static Future<Response> acceptCandidates(List<Candidate> candidates) async {
-
     var jsonToEncode = candidates.map((activity) => activity).toList();
     return await http.Client().post(acceptCandidatesPath,
         headers: AuthProvider.getHeaders(), body: jsonEncode(jsonToEncode));
+  }
+
+  //Offers
+  static Future<Response> findBestMatches(String offerContent) async {
+    return await http.Client().post(findBestMatchesPath,
+        headers: AuthProvider.getHeaders(), body: jsonEncode(offerContent));
   }
 }

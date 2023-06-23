@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recruitmentclient/components/custom_button.dart';
 import 'package:recruitmentclient/models/home_response.dart';
-import 'package:recruitmentclient/models/user.dart';
 import 'package:recruitmentclient/services/api.dart';
+import 'package:recruitmentclient/services/snack_bar.dart';
 
 import '../components/textinput.dart';
 import '../models/user_request.dart';
 import '../providers/auth.dart';
 import '../providers/user.dart';
-import '../services/toast.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -54,12 +53,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   login() async {
     if (_ctlUsername.text.isEmpty || _ctlPassword.text.isEmpty) {
-      ToastService.showError(
-         context, "Veuillez saisir un identifiant et un mot de passe");
+      SnackBarService.showError(
+          "Veuillez saisir un identifiant et un mot de passe");
       return;
     }
 
-    UserRequestModel userModel = UserRequestModel(_ctlUsername.text, _ctlPassword.text);
+    UserRequestModel userModel =
+        UserRequestModel(_ctlUsername.text, _ctlPassword.text);
     var res = await API.login(userModel);
 
     if (res.statusCode == 200) {
@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await Provider.of<UserProvider>(context, listen: false)
           .setUser(homeResponse.user);
     } else {
-      ToastService.showError(context, "Une erreur est survenue, merci de réessayer");
+      SnackBarService.showError("Une erreur est survenue, merci de réessayer");
     }
   }
 }

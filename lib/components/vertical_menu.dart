@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recruitmentclient/models/user.dart';
+import 'package:recruitmentclient/screens/matching.dart';
 import 'package:recruitmentclient/screens/new_candidate.dart';
 
 import '../providers/auth.dart';
@@ -35,10 +36,13 @@ class _VerticalMenuState extends State<VerticalMenu> {
             shrinkWrap: true, // use it
             children: [
               ListTile(
+                  leading: Icon(Icons.handshake),
+                  title: Text('Matching'),
+                  onTap: () => goToPage(const MatchingScreen())),
+              ListTile(
                   leading: Icon(Icons.edit_document),
                   title: Text('Nouveaux candidats'),
                   onTap: () => goToPage(const NewCandidateScreen())),
-                  
               if (_loggedUser!.role != UserRole.user)
                 ListTile(
                     leading: Icon(Icons.people),

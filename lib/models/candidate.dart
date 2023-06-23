@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class Candidate {
-  String? id;
+  String id;
   String firstname;
   String lastname;
   String currentLocation;
@@ -18,6 +18,7 @@ class Candidate {
   bool enable;
   bool fulltime;
   bool isFreelance;
+  String comment;
 
   Candidate(
     this.id,
@@ -37,6 +38,7 @@ class Candidate {
     this.enable,
     this.fulltime,
     this.isFreelance,
+    this.comment
   );
 
   factory Candidate.fromReqBody(String body) {
@@ -60,11 +62,13 @@ class Candidate {
       json['enable'],
       json['fullTime'],
       json['isFreelance'],
+      json['comment']
     );
   }
 
   // activities.map((activity) => activity.index).toList()
   Map toJson() => {
+        'id': id,
         'firstname': firstname,
         'lastname': lastname,
         'currentLocation': currentLocation,
@@ -79,6 +83,7 @@ class Candidate {
         'cvUrl' : cvUrl,
         'enable' : enable,
         'fulltime': fulltime,
-        'isFreelance': isFreelance
+        'isFreelance': isFreelance,
+        'comment': comment
       };
 }

@@ -5,6 +5,7 @@ import 'package:recruitmentclient/providers/user.dart';
 import 'package:recruitmentclient/screens/home.dart';
 import 'package:recruitmentclient/screens/login.dart';
 
+
 void main() {
   runApp(MultiProvider(
     providers: [
@@ -21,6 +22,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: NavigationService.navigatorKey,
       debugShowCheckedModeBanner: false,
       routes: {
         '/': (context) => const SplashScreen(),
@@ -45,6 +47,11 @@ class SplashScreen extends StatelessWidget {
       },
     );
   }
+}
+
+class NavigationService { 
+  static GlobalKey<NavigatorState> navigatorKey = 
+  GlobalKey<NavigatorState>();
 }
 
 

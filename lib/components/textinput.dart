@@ -5,9 +5,12 @@ class TextInput extends StatefulWidget {
   final String label;
   final bool isPassword;
   final TextEditingController controller;
+  final bool multilines;
+  final Function()? onEnter;
+  final Function(String value)? onChanged;
 
   const TextInput(this.title, this.label, this.isPassword, this.controller,
-      {super.key});
+      {super.key, this.multilines = false, this.onChanged, this.onEnter});
 
   @override
   State<TextInput> createState() => _TextInputState();
@@ -30,19 +33,49 @@ class _TextInputState extends State<TextInput> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(widget.title),
-          TextFormField(
-            controller: widget.controller,
-            obscureText: _obscureText,
-            decoration: InputDecoration(
-              suffixIcon: getSuffixIcon(),
-              labelText: widget.label,
-              floatingLabelBehavior: FloatingLabelBehavior.never,
-              border: const OutlineInputBorder(),
-            ),
-          )
+          if (widget.multilines)
+            getWrappedTextFormField()
+          else
+            getTextFormField(),
         ],
       ),
     );
+  }
+
+  getWrappedTextFormField() {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.4,
+      child: getTextFormField(),
+    );
+  }
+
+  getTextFormField() {
+    return TextFormField(
+      onTap: () => onEnter(),
+      onChanged: (value) => onChanged(value),
+      maxLines: widget.multilines == true ? null : 1,
+      expands: widget.multilines,
+      controller: widget.controller,
+      obscureText: _obscureText,
+      decoration: InputDecoration(
+        suffixIcon: getSuffixIcon(),
+        labelText: widget.label,
+        floatingLabelBehavior: FloatingLabelBehavior.never,
+        border: const OutlineInputBorder(),
+      ),
+    );
+  }
+
+  onEnter() {
+    if (widget.onEnter != null) {
+      widget.onEnter!();
+    }
+  }
+
+  onChanged(String value){
+    if (widget.onChanged != null){
+      widget.onChanged!(value);
+    }
   }
 
   IconButton getSuffixIcon() {

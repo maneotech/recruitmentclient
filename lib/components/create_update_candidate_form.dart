@@ -7,11 +7,15 @@ import '../models/candidate.dart';
 class CreateUpdateCandidateForm extends StatefulWidget {
   final Candidate? candidateToUpdate;
   final Function(Candidate) validateCandidate;
-  final Function(Candidate) rejectCandidate;
+  final Function(Candidate) ignoreCandidate;
+  final bool disableValidateCandidate;
+  final bool disableIgnoreCandidate;
 
   const CreateUpdateCandidateForm(
-      this.candidateToUpdate, this.validateCandidate, this.rejectCandidate,
-      {super.key});
+      this.candidateToUpdate, this.validateCandidate, this.ignoreCandidate,
+      {this.disableValidateCandidate = false,
+      this.disableIgnoreCandidate = false,
+      super.key});
 
   @override
   State<CreateUpdateCandidateForm> createState() =>
@@ -30,6 +34,8 @@ class _CreateUpdateCandidateFormState extends State<CreateUpdateCandidateForm> {
   final TextEditingController _ctlPhoneNumber = TextEditingController();
   final TextEditingController _ctlEmail = TextEditingController();
   final TextEditingController _ctlKeywords = TextEditingController();
+  final TextEditingController _ctlComment = TextEditingController();
+
   //final TextEditingController _ctlFulltime = TextEditingController();
   // final TextEditingController _ctlIsFreelance = TextEditingController();
 
@@ -64,35 +70,39 @@ class _CreateUpdateCandidateFormState extends State<CreateUpdateCandidateForm> {
             TextInput("Email", "Type email", false, _ctlEmail)
           ],
         ),
-        getRow([
-          TextInput("Keywords", "Type keywords", false, _ctlKeywords),
-        ]),
-        CustomButton("Valider ce candidat", () => validateCandidate()),
-        CustomButton("Rejeter ce candidat", () => rejectCandidate())
+        getRow(
+          [
+            TextInput("Keywords", "Type keywords", false, _ctlKeywords),
+            TextInput("Internal comment", "Type internal comment ", false,
+                _ctlComment),
+          ],
+        ),
+        CustomButton("Valider ce candidat", () => validateCandidate(), disable: widget.disableValidateCandidate,),
+        CustomButton("Ignorer", () => ignoreCandidate(), disable: widget.disableIgnoreCandidate,)
       ],
     );
   }
 
   Candidate buildCandidate() {
     Candidate candidate = Candidate(
-      null,
-      _ctlFirstname.text,
-      _ctlLastname.text,
-      _ctlCurrentLocation.text,
-      _ctlTargetLocation.text,
-      _ctlJobTitle.text,
-      _ctlField.text,
-      0,
-      [],
-      _ctlPhoneNumber.text,
-      _ctlEmail.text,
-      _ctlKeywords.text.split(','),
-      "",
-      "",
-      true,
-      true,
-      false,
-    );
+        widget.candidateToUpdate!.id,
+        _ctlFirstname.text,
+        _ctlLastname.text,
+        _ctlCurrentLocation.text,
+        _ctlTargetLocation.text,
+        _ctlJobTitle.text,
+        _ctlField.text,
+        0,
+        [],
+        _ctlPhoneNumber.text,
+        _ctlEmail.text,
+        _ctlKeywords.text.split(','),
+        "",
+        "",
+        true,
+        true,
+        false,
+        _ctlComment.text);
 
     return candidate;
   }
@@ -102,9 +112,9 @@ class _CreateUpdateCandidateFormState extends State<CreateUpdateCandidateForm> {
     widget.validateCandidate(candidate);
   }
 
-  rejectCandidate() {
+  ignoreCandidate() {
     Candidate candidate = buildCandidate();
-    widget.rejectCandidate(candidate);
+    widget.ignoreCandidate(candidate);
   }
 
   initVariables() {
@@ -120,6 +130,7 @@ class _CreateUpdateCandidateFormState extends State<CreateUpdateCandidateForm> {
       _ctlPhoneNumber.text = candidate.phoneNumber;
       _ctlEmail.text = candidate.email;
       _ctlKeywords.text = candidate.keywords.toString();
+      _ctlComment.text = candidate.comment;
     }
   }
 

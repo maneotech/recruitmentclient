@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:recruitmentclient/components/custom_button.dart';
 import 'package:recruitmentclient/screens/base_screen.dart';
-import 'package:recruitmentclient/screens/import_cvs.dart';
-import 'package:recruitmentclient/screens/new_candidate.dart';
-import 'package:recruitmentclient/services/api.dart';
-import 'package:recruitmentclient/services/toast.dart';
-
+import 'package:recruitmentclient/screens/candidate_details.dart';
 import '../models/candidate.dart';
 
 class SummaryNewCandidate extends StatefulWidget {
   final List<Candidate> allCandidates;
-  final List<Candidate> validatedCandidates;
-  final List<Candidate> rejectedCandidates;
+  final List<Candidate> ignoredCandidates;
 
-  const SummaryNewCandidate(
-      this.allCandidates, this.validatedCandidates, this.rejectedCandidates,
+  const SummaryNewCandidate(this.allCandidates, this.ignoredCandidates,
       {super.key});
 
   @override
@@ -34,11 +27,11 @@ class _SummaryNewCandidateState extends State<SummaryNewCandidate> {
           padding: const EdgeInsets.only(top: 30.0),
           child: getValidatedCandidateBlock(),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 30.0),
-          child: getRefusedCandidateBlock(),
-        ),
-        getButtons()
+        if (widget.ignoredCandidates.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 30.0),
+            child: getIgnoredCandidateBlock(),
+          ),
       ]),
     );
   }
@@ -46,80 +39,49 @@ class _SummaryNewCandidateState extends State<SummaryNewCandidate> {
   Column getValidatedCandidateBlock() {
     return Column(
       children: [
-        const Text("Candidats validés : "),
-        ...getValidatedCandidate()
+        Text("${widget.allCandidates.length} candidats ajoutés"),
+        ...getCandidateRows(widget.allCandidates)
       ],
     );
   }
 
-  Column getRefusedCandidateBlock() {
+  Column getIgnoredCandidateBlock() {
     return Column(
-      children: [const Text("Candidats rejetés : "), ...getRejectedCandidate()],
+      children: [
+        const Text("Candidats ignorés : "),
+        ...getCandidateRows(widget.ignoredCandidates)
+      ],
     );
   }
 
-  List<Text> getValidatedCandidate() {
-    List<Text> texts = [];
+  List<Row> getCandidateRows(List<Candidate> candidates) {
+    List<Row> candidatesRows = [];
 
-    for (var candidate in widget.validatedCandidates) {
-      texts.add(Text("${candidate.firstname} ${candidate.lastname}"));
-    }
-
-    return texts;
-  }
-
-  List<Text> getRejectedCandidate() {
-    List<Text> texts = [];
-
-    for (var candidate in widget.rejectedCandidates) {
-      texts.add(Text("${candidate.firstname} ${candidate.lastname}"));
-    }
-
-    return texts;
-  }
-
-  Padding getButtons() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 30.0),
-      child: Column(
+    for (var candidate in candidates) {
+      Row row = Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          CustomButton(
-            "Valider ce choix en base de données",
-            () => validateAllCandidates(),
+          Text(
+            "${candidate.firstname} - ${candidate.lastname} - ${candidate.email} - ${candidate.phoneNumber}",
           ),
-          CustomButton(
-            "Revenir en arrière pour effectuer des modifications",
-            () => backToUploadsPDF(),
-          ),
+          IconButton(
+            onPressed: () => editCandidate(candidate),
+            icon: const Icon(Icons.edit),
+          )
         ],
-      ),
-    );
-  }
-
-  validateAllCandidates() async {
-    var res = await API.acceptCandidates(widget.validatedCandidates);
-    if (res.statusCode == 204) {
-      ToastService.showSuccess(context, "Les candidats ont bien été insérés en base de données");
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (BuildContext context) =>
-              NewCandidateScreen(),
-        ),
       );
-    } else {
-      if (mounted)
-        ToastService.showError(
-            context, "Une erreur est survenue, merci de réessayer");
+      candidatesRows.add(row);
     }
+
+    return candidatesRows;
   }
 
-  backToUploadsPDF() {
+  editCandidate(Candidate candidate) {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (BuildContext context) =>
-            ImportCVsScreen(widget.allCandidates),
+            CandidateDetailsScreen(widget.allCandidates, candidate),
       ),
     );
   }
