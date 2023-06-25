@@ -6,14 +6,15 @@ import '../models/candidate.dart';
 
 class CreateUpdateCandidateForm extends StatefulWidget {
   final Candidate? candidateToUpdate;
-  final Function(Candidate) validateCandidate;
+  final Function(Candidate) updateCandidate;
+  final Function(Candidate) unignoreCandidate;
   final Function(Candidate) ignoreCandidate;
-  final bool disableValidateCandidate;
+  final bool disableunignoreCandidate;
   final bool disableIgnoreCandidate;
 
-  const CreateUpdateCandidateForm(
-      this.candidateToUpdate, this.validateCandidate, this.ignoreCandidate,
-      {this.disableValidateCandidate = false,
+  const CreateUpdateCandidateForm(this.candidateToUpdate,
+      this.unignoreCandidate, this.ignoreCandidate, this.updateCandidate,
+      {this.disableunignoreCandidate = false,
       this.disableIgnoreCandidate = false,
       super.key});
 
@@ -39,48 +40,145 @@ class _CreateUpdateCandidateFormState extends State<CreateUpdateCandidateForm> {
   //final TextEditingController _ctlFulltime = TextEditingController();
   // final TextEditingController _ctlIsFreelance = TextEditingController();
 
+  //bool _hasBeenChanged = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    initVariables();
+    initVariables(widget.candidateToUpdate!);
 
+    return Column(
+      children: [
+        if (widget.disableIgnoreCandidate == false) getFormElement(),
+        if (widget.disableIgnoreCandidate) const Text("Candidat ignoré"),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [getIgnoreButton()],
+        )
+      ],
+    );
+  }
+
+  Column getFormElement() {
     return Column(
       children: [
         getRow(
           [
-            TextInput("Prénom", "Saisir le prénom", false, _ctlFirstname),
-            TextInput("Nom", "Saisir le nom", false, _ctlLastname)
+            TextInput(
+              "Prénom",
+              "Saisir le prénom",
+              false,
+              _ctlFirstname,
+              //onChanged: (value) => resetHasBeenChanged(true),
+            ),
+            TextInput(
+              "Nom",
+              "Saisir le nom",
+              false,
+              _ctlLastname,
+              //onChanged: (value) => resetHasBeenChanged(true),
+            )
           ],
         ),
         getRow([
-          TextInput("Current location", "Type current location", false,
-              _ctlCurrentLocation),
-          TextInput("Target location", "Type target location", false,
-              _ctlTargetLocation)
+          TextInput(
+            "Current location",
+            "Type current location",
+            false,
+            _ctlCurrentLocation,
+            //onChanged: (value) => resetHasBeenChanged(true),
+          ),
+          TextInput(
+            "Target location",
+            "Type target location",
+            false,
+            _ctlTargetLocation,
+            //onChanged: (value) => resetHasBeenChanged(true),
+          )
         ]),
         getRow(
           [
-            TextInput("Job title", "Type job title", false, _ctlJobTitle),
-            TextInput("Field", "Type field", false, _ctlField)
+            TextInput(
+              "Job title",
+              "Type job title",
+              false,
+              _ctlJobTitle,
+              //onChanged: (value) => resetHasBeenChanged(true),
+            ),
+            TextInput(
+              "Field",
+              "Type field",
+              false,
+              _ctlField,
+              //onChanged: (value) => resetHasBeenChanged(true),
+            )
           ],
         ),
         getRow(
           [
             TextInput(
-                "Phone number", "Type phone number", false, _ctlPhoneNumber),
-            TextInput("Email", "Type email", false, _ctlEmail)
+              "Phone number",
+              "Type phone number",
+              false,
+              _ctlPhoneNumber,
+              //onChanged: (value) => resetHasBeenChanged(true),
+            ),
+            TextInput(
+              "Email",
+              "Type email",
+              false,
+              _ctlEmail,
+              //onChanged: (value) => resetHasBeenChanged(true),
+            )
           ],
         ),
         getRow(
           [
-            TextInput("Keywords", "Type keywords", false, _ctlKeywords),
-            TextInput("Internal comment", "Type internal comment ", false,
-                _ctlComment),
+            TextInput(
+              "Keywords",
+              "Type keywords",
+              false,
+              _ctlKeywords,
+              //onChanged: (value) => resetHasBeenChanged(true),
+            ),
+            TextInput(
+              "Internal comment",
+              "Type internal comment ",
+              false,
+              _ctlComment,
+              //onChanged: (value) => resetHasBeenChanged(true),
+            ),
           ],
         ),
-        CustomButton("Valider ce candidat", () => validateCandidate(), disable: widget.disableValidateCandidate,),
-        CustomButton("Ignorer", () => ignoreCandidate(), disable: widget.disableIgnoreCandidate,)
+        CustomButton("Mettre à jour les modifications", () => updateCandidate(),
+            /*disable: !_hasBeenChanged*/),
       ],
     );
+  }
+
+  /*resetHasBeenChanged(bool hasChanged) {
+    if (_hasBeenChanged != hasChanged) {
+      setState(() {
+        _hasBeenChanged = hasChanged;
+      });
+    }
+  }*/
+
+  CustomButton getIgnoreButton() {
+    if (widget.disableIgnoreCandidate) {
+      return CustomButton("Ne plus ignorer", () => unignoreCandidate(),
+          disable: widget.disableunignoreCandidate);
+    } else {
+      return CustomButton(
+        "Ignorer",
+        () => ignoreCandidate(),
+        disable: widget.disableIgnoreCandidate,
+      );
+    }
   }
 
   Candidate buildCandidate() {
@@ -98,29 +196,39 @@ class _CreateUpdateCandidateFormState extends State<CreateUpdateCandidateForm> {
         _ctlEmail.text,
         _ctlKeywords.text.split(','),
         "",
-        "",
+        widget.candidateToUpdate!.cvUrl,
         true,
         true,
         false,
-        _ctlComment.text);
+        _ctlComment.text,
+        false);
 
     return candidate;
   }
 
-  validateCandidate() {
+  updateCandidate() {
     Candidate candidate = buildCandidate();
-    widget.validateCandidate(candidate);
+    widget.updateCandidate(candidate);
+    //resetHasBeenChanged(false);
+  }
+
+  unignoreCandidate() {
+    Candidate candidate = buildCandidate();
+    candidate.ignored = false;
+    widget.unignoreCandidate(candidate);
+
+     //resetHasBeenChanged(false);
   }
 
   ignoreCandidate() {
     Candidate candidate = buildCandidate();
+    candidate.ignored = true;
     widget.ignoreCandidate(candidate);
+
+     //resetHasBeenChanged(false);
   }
 
-  initVariables() {
-    if (widget.candidateToUpdate != null) {
-      Candidate candidate = widget.candidateToUpdate!;
-
+  initVariables(Candidate candidate) {
       _ctlFirstname.text = candidate.firstname;
       _ctlLastname.text = candidate.lastname;
       _ctlCurrentLocation.text = candidate.currentLocation;
@@ -129,9 +237,8 @@ class _CreateUpdateCandidateFormState extends State<CreateUpdateCandidateForm> {
       _ctlField.text = candidate.field;
       _ctlPhoneNumber.text = candidate.phoneNumber;
       _ctlEmail.text = candidate.email;
-      _ctlKeywords.text = candidate.keywords.toString();
+      _ctlKeywords.text = candidate.keywords.toString().replaceAll("[", "").replaceAll("]", "").replaceAll(" ", "");
       _ctlComment.text = candidate.comment;
-    }
   }
 
   Padding getRow(List<Widget> widgets) {

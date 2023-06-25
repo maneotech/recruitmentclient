@@ -19,6 +19,7 @@ class Candidate {
   bool fulltime;
   bool isFreelance;
   String comment;
+  bool ignored;
 
   Candidate(
     this.id,
@@ -38,7 +39,8 @@ class Candidate {
     this.enable,
     this.fulltime,
     this.isFreelance,
-    this.comment
+    this.comment,
+    this.ignored
   );
 
   factory Candidate.fromReqBody(String body) {
@@ -62,7 +64,8 @@ class Candidate {
       json['enable'],
       json['fullTime'],
       json['isFreelance'],
-      json['comment']
+      json['comment'],
+      json['ignored']
     );
   }
 
@@ -84,6 +87,7 @@ class Candidate {
         'enable' : enable,
         'fulltime': fulltime,
         'isFreelance': isFreelance,
-        'comment': comment
+        'comment': comment,
+        'ignored': ignored
       };
 }

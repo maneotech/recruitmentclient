@@ -16,7 +16,8 @@ class API {
   static Uri usersPath = Uri.parse("$api/users");
   static Uri getManagersPath = Uri.parse("$api/users/managers");
   static Uri uploadCandidatesPath = Uri.parse("$api/candidates/upload");
-  static Uri acceptCandidatesPath = Uri.parse("$api/candidates/accept");
+  static Uri updateCandidatesPath = Uri.parse("$api/candidates");
+
   static Uri findBestMatchesPath = Uri.parse("$api/matching/offer");
   //exclude managers and superadmin
   static Uri getUsersPath = Uri.parse("$api/users/users");
@@ -68,11 +69,23 @@ class API {
     return await http.Response.fromStream(streamedResponse);
   }
 
-  static Future<Response> acceptCandidates(List<Candidate> candidates) async {
-    var jsonToEncode = candidates.map((activity) => activity).toList();
-    return await http.Client().post(acceptCandidatesPath,
-        headers: AuthProvider.getHeaders(), body: jsonEncode(jsonToEncode));
+  static Future<Response> ignoreCandidate(String id) async {
+    Uri ignoreCandidatePath = Uri.parse("$api/candidates/ignore/$id");
+    return await http.Client()
+        .put(ignoreCandidatePath, headers: AuthProvider.getHeaders());
   }
+
+  static Future<Response> unignoreCandidate(String id) async {
+    Uri unignoreCandidatePath = Uri.parse("$api/candidates/unignore/$id");
+    return await http.Client()
+        .put(unignoreCandidatePath, headers: AuthProvider.getHeaders());
+  }
+
+  static Future<Response> updateCandidate(Candidate candidate) async {
+    return await http.Client()
+        .put(updateCandidatesPath, headers: AuthProvider.getHeaders(), body: jsonEncode(candidate));
+  }
+  
 
   //Offers
   static Future<Response> findBestMatches(String offerContent) async {

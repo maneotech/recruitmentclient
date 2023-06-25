@@ -72,8 +72,8 @@ class _TextInputState extends State<TextInput> {
     }
   }
 
-  onChanged(String value){
-    if (widget.onChanged != null){
+  onChanged(String value) {
+    if (widget.onChanged != null) {
       widget.onChanged!(value);
     }
   }
