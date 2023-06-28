@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recruitmentclient/models/user.dart';
+import 'package:recruitmentclient/screens/company.dart';
 import 'package:recruitmentclient/screens/matching.dart';
 import 'package:recruitmentclient/screens/new_candidate.dart';
+import 'package:recruitmentclient/screens/offer.dart';
 
 import '../providers/auth.dart';
 import '../providers/user.dart';
@@ -40,9 +42,17 @@ class _VerticalMenuState extends State<VerticalMenu> {
                   title: Text('Matching'),
                   onTap: () => goToPage(const MatchingScreen())),
               ListTile(
-                  leading: Icon(Icons.edit_document),
+                  leading: Icon(Icons.emoji_people_sharp),
                   title: Text('Nouveaux candidats'),
                   onTap: () => goToPage(const NewCandidateScreen())),
+              ListTile(
+                  leading: Icon(Icons.house),
+                  title: Text('Entreprises'),
+                  onTap: () => goToPage(const CompanyScreen())),
+              ListTile(
+                  leading: Icon(Icons.edit_document),
+                  title: Text("Offres d'emplois"),
+                  onTap: () => goToPage(const OfferScreen())),
               if (_loggedUser!.role != UserRole.user)
                 ListTile(
                     leading: Icon(Icons.people),

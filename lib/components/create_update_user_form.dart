@@ -136,7 +136,7 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
       return Column(
         children: [
           CustomButton("Modifier cet utilisateur", () => updateUser()),
-          CustomButton("Supprimer cet utilisateur", () => removeUser()),
+          CustomButton("Supprimer cet utilisateur", () => deleteUser()),
         ],
       );
     } else {
@@ -234,7 +234,7 @@ class _CreateUpdateUserFormState extends State<CreateUpdateUserForm> {
     }
   }
 
-  removeUser() async {
+  deleteUser() async {
     if (_ctlUsername.text.isEmpty) {
       SnackBarService.showError(
           "Un identifiant est nécessaire pour supprimer un utilisateur");

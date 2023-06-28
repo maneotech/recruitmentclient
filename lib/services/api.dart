@@ -5,11 +5,12 @@ import 'package:http/http.dart' as http;
 import 'package:recruitmentclient/models/user.dart';
 
 import '../models/candidate.dart';
+import '../models/company.dart';
 import '../models/user_request.dart';
 import '../providers/auth.dart';
 
 class API {
-  static String base = "http://192.168.0.19:7122";
+  static String base = "http://192.168.0.20:7122";
   static String api = "$base/api";
 
   static Uri loginPath = Uri.parse("$api/authenticate/login");
@@ -17,6 +18,7 @@ class API {
   static Uri getManagersPath = Uri.parse("$api/users/managers");
   static Uri uploadCandidatesPath = Uri.parse("$api/candidates/upload");
   static Uri updateCandidatesPath = Uri.parse("$api/candidates");
+  static Uri companiesPath = Uri.parse("$api/companies");
 
   static Uri findBestMatchesPath = Uri.parse("$api/matching/offer");
   //exclude managers and superadmin
@@ -82,10 +84,31 @@ class API {
   }
 
   static Future<Response> updateCandidate(Candidate candidate) async {
-    return await http.Client()
-        .put(updateCandidatesPath, headers: AuthProvider.getHeaders(), body: jsonEncode(candidate));
+    return await http.Client().put(updateCandidatesPath,
+        headers: AuthProvider.getHeaders(), body: jsonEncode(candidate));
   }
-  
+
+  //Companies
+
+  static Future<Response> createCompany(Company company) async {
+    return await http.Client().post(companiesPath,
+        headers: AuthProvider.getHeaders(), body: jsonEncode(company));
+  }
+
+  static Future<Response> getCompanies() async {
+    return await http.Client()
+        .get(companiesPath, headers: AuthProvider.getHeaders());
+  }
+
+  static Future<Response> updateCompany(Company company) async {
+    return await http.Client().put(companiesPath,
+        headers: AuthProvider.getHeaders(), body: jsonEncode(company));
+  }
+
+    static Future<Response> deleteCompany(String companyId) async {
+    return await http.Client().delete(companiesPath,
+        headers: AuthProvider.getHeaders(), body: jsonEncode(companyId));
+  }
 
   //Offers
   static Future<Response> findBestMatches(String offerContent) async {

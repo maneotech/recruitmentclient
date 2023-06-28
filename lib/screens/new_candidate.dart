@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:recruitmentclient/components/custom_button.dart';
 import 'package:recruitmentclient/models/upload_candidate_response.dart';
